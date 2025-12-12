@@ -42,7 +42,32 @@ namespace Shell {
       Thread staThread = new Thread(
         delegate () {
           try {
-            System.Windows.Forms.Clipboard.SetText(text);
+            if (string.IsNullOrEmpty(text)) {
+              System.Windows.Forms.Clipboard.Clear();
+            } else {
+              System.Windows.Forms.Clipboard.SetText(text);
+            }
+          } catch (Exception ex) {
+            threadEx = ex;
+          }
+        });
+      staThread.SetApartmentState(ApartmentState.STA);
+      staThread.Start();
+      staThread.Join();
+
+      if (threadEx != null) {
+        return Serialize(new { error = threadEx.Message });
+      }
+
+      return Serialize(new { success = true });
+    }
+
+    public string Clear() {
+      Exception threadEx = null;
+      Thread staThread = new Thread(
+        delegate () {
+          try {
+            System.Windows.Forms.Clipboard.Clear();
           } catch (Exception ex) {
             threadEx = ex;
           }
